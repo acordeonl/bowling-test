@@ -14,14 +14,52 @@
             #rollsInput{
                 /* opacity: 0 ; */
             }
+            [name]{
+               @apply --layout-center;
+               
+               @apply --layout-horizontal;
+               /* @apply --layout-center-justified; */
+               @apply --layout-justified;
+                background-color: #2ca5a5 ;
+                width:100% ;
+                color: white ;
+                text-transform: uppercase;
+                font-weight: 500 ; 
+                margin-bottom: 7px ; 
+                border-radius: 5px ; 
+                height: 40px ;
+            }
+            paper-input{
+                position: absolute ;
+                margin-left:20px ; 
+                margin-top: -10px ;
+                --paper-input-container-focus-color: #39c9c9  ; 
+                --paper-input-container-color:white ;
+                --paper-input-container-label: {
+                    font-size: 19px;
+                    font-weight: 300;
+                };
+                --paper-input-container-input: {
+                    font-size: 20px;
+                    font-weight: 500;
+                    color:white ;
+                };
+            }
         </style>
-        <div wrapper>
+            <div name>
+                <paper-input allowed-pattern="[0-9,Xx/-]+" id='rollsInput' value='{{rolls}}'>  </paper-input>
+                <paper-icon-button style='visibility: hidden;' icon='delete' on-click='_delete'>  </paper-icon-button>
+                [[playerName]]
+                <paper-icon-button style='margin-left:-20px;' icon='delete' on-click='_delete'>  </paper-icon-button>
+            </div>
+        <div wrapper on-click='_selectScoreboard'>
             <template id="domRepeat" list is="dom-repeat" items="{{_computeFrameValues(rolls)}}" as="frame">
                 <score-frame id='frame_[[index]]' frame-number=[[index]] score1=[[frame.score1]] score2=[[frame.score2]] score-result=[[frame.result]]> </score-frame>
             </template>
             <last-frame id='frame_9' frame-number='9' score1='[[lastScore1]]' score2='[[lastScore2]]' score3='[[lastScore3]]' score-result='[[totalScore]]'>  </last-frame>
         </div>
-        <paper-input allowed-pattern="[0-9,Xx/-]+" id='rollsInput' value='{{rolls}}'>  </paper-input>
+        <br>
+        
     </template>
     <script>
         class ScoreBoard extends Polymer.Element {
@@ -38,40 +76,94 @@
                     frameValues: {
                         type: Array
                     },
+                    id:{type:String},
+                    playerName:{type:String},
                     selected:{type:Boolean,value:false,observer:'_updateSelection'},
                     currentRoll:{type:Number,value:0},
                     selectedFrame:{type:Number,value:0,observer:'_nextTurn'},
                     lastScore1:{type:String,value:""},
                     lastScore2:{type:String,value:""},
                     lastScore3:{type:String,value:""},
-                    totalScore:{type:String,value:""}
+                    totalScore:{type:String,value:""},
+                    done:{type:Boolean,value:false},
+                    doneLength:{type:String,value:""},
                 }
             }
             constructor() {
                 super();
             }
-            _test() {
-                if(this.selectedFrame<9){
-                    console.log(this.frameValues[this.selectedFrame].score1,this.frameValues[this.selectedFrame].score2,this.frameValues[this.selectedFrame].score3);
+            _selectScoreboard(e) {
+                this.dispatchEvent(new CustomEvent('select-scoreboard', {detail:{
+                    id:this.id 
+                }, bubbles: true, composed: true }));
+            }
+            _delete() {
+                this.dispatchEvent(new CustomEvent('delete-player', {detail:{
+                    id:this.id
+                }, bubbles: true, composed: true }));
+            }
+            async _validateRolls(value) {
+                this.rolls = this.rolls.replace(/\s/g, "") ;
+                let score1,score2,score3
+                this.currentRoll = this.rolls.charAt(this.rolls.length-1) ; 
+                if(this.selectedFrame < 9) {
+                    score1 = this.frameValues[this.selectedFrame].score1 ; 
+                    score2 = this.frameValues[this.selectedFrame].score2 ; 
+                    score3 = this.frameValues[this.selectedFrame].score3 ; 
                 }
                 else{
-                    console.log(this.lastScore1,this.lastScore2,this.lastScore3);
+                    score1 = this.lastScore1 ;
+                    score2 = this.lastScore2 ;
+                    score3 = this.lastScore3 ;
                 }
-            }
-            _validateRolls(value) {
-                this.rolls = this.rolls.replace(/\s/g, "") ;
+                if(this.done) {
+                    this.rolls = this.rolls.substr(0,this.doneLength) ;
+                    this.dispatchEvent(new CustomEvent('toast', {detail:{
+                        msg:'Finalizado'
+                    }, bubbles: true, composed: true }));
+                }
+                // console.log('score1:',score1,'score2:',score2,'score3:',score3);  
+                if(score1 === "/") {
+                    this.dispatchEvent(new CustomEvent('toast', {detail:{
+                        msg:"No es posible ingresar '/'"
+                    }, bubbles: true, composed: true }));
+                    this.rolls = this.rolls.substr(0,this.rolls.length-1) ;
+                }
+                else if(score2 === "X" && this.selectedFrame < 9) {
+                    this.dispatchEvent(new CustomEvent('toast', {detail:{
+                        msg:"No es posible ingresar 'X'"
+                    }, bubbles: true, composed: true }));
+                    this.rolls = this.rolls.substr(0,this.rolls.length-1) ;
+                }
+                else if(score1 === "" && score2 === "/"){
+                    this.dispatchEvent(new CustomEvent('toast', {detail:{
+                        msg:"No es posible ingresar '/'"
+                    }, bubbles: true, composed: true }));
+                    this.rolls = this.rolls.substr(0,this.rolls.length-1) ;
+                }
+                else if(score3 === "/" && score2 === "/"){
+                    this.dispatchEvent(new CustomEvent('toast', {detail:{
+                        msg:"No es posible ingresar '/'"
+                    }, bubbles: true, composed: true }));
+                    this.rolls = this.rolls.substr(0,this.rolls.length-1) ;
+                }
+                else if(score3 === "X" && this._isDigit(score2)){
+                    this.dispatchEvent(new CustomEvent('toast', {detail:{
+                        msg:"No es posible ingresar 'X'"
+                    }, bubbles: true, composed: true }));
+                    this.rolls = this.rolls.substr(0,this.rolls.length-1) ;
+                }
+                else if(score3 === "/" && score2 === "X"){
+                    this.dispatchEvent(new CustomEvent('toast', {detail:{
+                        msg:"No es posible ingresar '/'"
+                    }, bubbles: true, composed: true }));
+                    this.rolls = this.rolls.substr(0,this.rolls.length-1) ;
+                }
                 for(let i = 0 ; i < this.rolls.length ; i ++ ) {
-                    if(this.rolls[i] === '0')
+                    if(this.rolls[i] === '0') 
                         this.rolls = this.rolls.substr(0,i) + '-' + this.rolls.substr(i+1);
                     else if(this.rolls[i] === 'x')
                         this.rolls = this.rolls.substr(0,i) + 'X' + this.rolls.substr(i+1);
-                }
-                if(this.rolls.charAt(this.rolls.length-1)=== 'X') {
-                    this.rolls = this.rolls.substr(0,this.rolls.length-1) ;
-                    this.dispatchEvent(new CustomEvent('toast', {detail:{
-                        msg:'invalid input',
-                        persist:true
-                    }, bubbles: true, composed: true }));
                 }
                 return this.rolls ; 
             }
@@ -80,8 +172,9 @@
             }
             _updateSelection(selected) {
                 Polymer.RenderStatus.afterNextRender(this, function() {
-                    if(!selected)
+                    if(!selected){
                         this.shadowRoot.querySelector('#frame_'+this.selectedFrame).selected = false ; 
+                    }
                     else{
                         this.shadowRoot.querySelector('#frame_'+this.selectedFrame).selected = true ; 
                         this.$.rollsInput.focus() ;
@@ -89,7 +182,7 @@
                 });
             }
             _isDigit(ch) {
-                if (ch >= '0' && ch <= '9')
+                if ((ch >= '0' && ch <= '9') || ch === '-')
                     return true;
                 return false;
             }
@@ -140,12 +233,13 @@
                     this.lastScore1 = frameObject.score1  ;
                     this.lastScore2 = frameObject.score2 ;
                     this.lastScore3 = frameObject.score3 ;
-                    if((this._isDigit(this.lastScore2) || this.lastScore2 === "-") || this.lastScore3 !== ""){
+                    if( (this._isDigit(this.lastScore2) && this.lastScore1 !== "X" ) || this.lastScore3 !== "" ){
+                        if(!this.done)
+                            this.doneLength = this.rolls.length ;
                         this.done = true ; 
                         this.totalScore = result.score ;
                         this.shadowRoot.querySelector('#frame_'+this.selectedFrame).selected = false ; 
                         this.dispatchEvent(new CustomEvent('rolls-computed', { bubbles: true, composed: true }));
-                        console.log('done');
                     }
                     else{
                         this.totalScore = "" ; 

@@ -29,14 +29,14 @@
     <template>
         <style>
             [wrapper] {
-                margin-top: 150px;
+                margin-top: 50px;
                 width: 100%;
                @apply --layout-center;
                @apply --layout-vertical;
                @apply --layout-center-justified;
             }
             score-board:hover{
-                opacity: 0.9; 
+                opacity: 0.8; 
                 cursor: pointer ;
             }
             paper-toast {
@@ -46,14 +46,57 @@
                 border-radius: 3px;
                 max-width: 65vw;
             }
+            [footer]{
+                position:fixed ; 
+                bottom:30px ;
+                right:30px ;
+            }
+            [addPlayer] {
+                margin-left: -10px;
+                margin-top: -20px;
+                margin-right: 12px;
+                color: white ; 
+                height:70px;
+                width:70px;
+                background-color: #39c9c9 ;
+                @apply --shadow-elevation-3dp;
+                border-radius: 100%;
+            }
+            [addPlayersMessage]{
+                    position: absolute;
+                    display: block;
+                    height: 100vh;
+                    width: 100vw;
+                    line-height: 68px;
+                    font-size: 30px;
+                    color: gray;
+                    margin-top:-60px; 
+                    padding: 0;
+                    top: 0;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+            }
         </style>
         <paper-toast id="toast"></paper-toast>
         <paper-toast id="toastPersist" duration="0">
             <paper-icon-button icon='close' on-click="_closeToastPersist"></paper-icon-button>
         </paper-toast>
         <div wrapper>
-            <score-board on-click='_selectScoreBoard' id='scoreboard_0' selected ='true'> </score-board>
+            <template id="domRepeat" list is="dom-repeat" items="{{players}}" as="player">
+                <score-board id='[[player.id]]' player-name='[[player.name]]'> </score-board>
+            </template>
+            <template is="dom-if" if="[[!players.length]]">
+                <div addPlayersMessage>
+                    Agrega nuevos jugadores y utiliza las <br> teclas: '0-9','-','X' y '/' para sumar los puntajes
+                </div>
+            </template>
             <!-- <score-board on-click='_selectScoreBoard' id='scoreboard_1' > </score-board> -->
+        </div>
+        <div footer>
+            <div >
+                <paper-icon-button on-click='_createNewPlayer' addPlayer icon='icons:add'></paper-icon-button>
+            </div>
         </div>
     </template>
     <script>
@@ -63,11 +106,36 @@
             }
             static get properties() {
                 return {
-                    currentPlayer:{type:Number,value:0},
+                    currentPlayer:{type:String},
+                    players:{type:Array,value:[]},
+                    cnt:{type:Number,value:0},
+                    currentPlayerPos:{type:Number,value:0},
                 }
             }
             constructor() {
                 super();
+            }
+            _createNewPlayer() {
+                let playerName = prompt('Ingresa el nombre del jugador') ; 
+                if(playerName === null)
+                    return ; 
+                // let playerName = 'camilo' ;
+
+                let tmp = this.players ; 
+                this.set('players', []);
+                tmp.push({
+                    id:'player_'+this.cnt,
+                    name:playerName
+                }) ;
+                this.set('players', tmp);
+                Polymer.RenderStatus.afterNextRender(this, async function() {
+                    if(this.currentPlayer !== undefined)
+                        this.shadowRoot.querySelector('#'+this.currentPlayer).selected = false ; 
+                    this.currentPlayer = 'player_'+this.cnt ; 
+                    this.currentPlayerPos = this.players.length-1 ;
+                    this.shadowRoot.querySelector('#'+this.currentPlayer).selected = true ; 
+                    this.cnt ++ ;
+                });
             }
             async openToast (e) {
                 let toast = this.$.toast ; 
@@ -85,26 +153,56 @@
                 this.$.toastPersist.toggle() ;     
             }
             _selectScoreBoard(e) {
-                this.shadowRoot.querySelector('#'+e.currentTarget.id).selected = true ; 
-                this.shadowRoot.querySelector('#scoreboard_'+this.currentPlayer).selected = false ; 
-                this.currentPlayer = e.currentTarget.id.split('_')[1] ; 
-                this.shadowRoot.querySelector('#scoreboard_'+this.currentPlayer).selected = true ; 
+                // console.log(e);
+                if(this.players.length === 0)
+                    return ; 
+                this.shadowRoot.querySelector('#'+e.detail.id).selected = true ; 
+                this.shadowRoot.querySelector('#'+this.currentPlayer).selected = false ; 
+                this.currentPlayer = e.detail.id ; 
+                this.shadowRoot.querySelector('#'+this.currentPlayer).selected = true ; 
             }
             _goToNextPlayer() {
+                console.log('next player');
                 Polymer.RenderStatus.afterNextRender(this, function() {
                     let arr = Polymer.dom(this.root).querySelectorAll('score-board');
                     if(arr.length === 1)
                         return ;
-                    this.shadowRoot.querySelector('#scoreboard_'+this.currentPlayer).selected = false ; 
-                    this.currentPlayer ++ ; 
-                    this.currentPlayer %= arr.length ;
-                    this.shadowRoot.querySelector('#scoreboard_'+this.currentPlayer).selected = true ; 
+                    this.shadowRoot.querySelector('#'+this.currentPlayer).selected = false ;
+                    this.currentPlayerPos ++ ;
+                    this.currentPlayerPos %= this.players.length ;
+                    this.currentPlayer = this.players[this.currentPlayerPos].id ; 
+                    this.shadowRoot.querySelector('#'+this.currentPlayer).selected = true ; 
+                    console.log(this.currentPlayer,this.currentPlayerPos);
+                });
+            }
+            _deletePlayer(e) {
+                let tmp = this.players ; 
+                this.shadowRoot.querySelector('#'+this.currentPlayer).selected = false ; 
+                this.set('players', []);
+                for(let i = 0 ; i < tmp.length ; i ++ ) { 
+                    if(tmp[i].id === e.detail.id){
+                        tmp = tmp.slice(0,i).concat(tmp.slice(i+1,tmp.length)) ; 
+                        break ;
+                    }
+                }
+                this.set('players', tmp);
+                Polymer.RenderStatus.afterNextRender(this, function() {
+                    this.currentPlayerPos = 0 ;
+                    this.currentPlayer = undefined ; 
+                    if(this.players.length > 0 )  {
+                        this.currentPlayer = this.players[this.currentPlayerPos].id ; 
+                        this.shadowRoot.querySelector('#'+this.currentPlayer).selected = false ; 
+                    }
+                        
                 });
             }
             ready() {
                 super.ready();
                 this.addEventListener('rolls-computed', e => this._goToNextPlayer(e));
                 this.addEventListener('toast', e => this.openToast(e));
+                this.addEventListener('delete-player', e => this._deletePlayer(e));
+                this.addEventListener('select-scoreboard', e => this._selectScoreBoard(e));
+                // this._createNewPlayer() ; 
             }
         }
         customElements.define('web-app', WebApp);
