@@ -128,17 +128,23 @@
                 this.shadowRoot.querySelector('[score2]').innerHTML = "" ;
                 this.shadowRoot.querySelector('[spare1]').classList.add('hidden') ; 
                 this.shadowRoot.querySelector('[spare2]').classList.add('hidden') ; 
-
+                
                 if (score1.charAt(0) === 'X'){
                     this.shadowRoot.querySelector('[spare1]').classList.remove('hidden') ; 
                     this.shadowRoot.querySelector('[spare2]').classList.remove('hidden') ; 
                     return ; 
                 }
                 if((score1.charAt(0) >= '0' && score1.charAt(0) <= '9') || score1.charAt(0) === '-'){
-                    this.shadowRoot.querySelector('[score1]').innerHTML = score1 ; 
+                    if(this.score1.charAt(0) === '0')
+                        this.shadowRoot.querySelector('[score1]').innerHTML = '-'; 
+                    else
+                        this.shadowRoot.querySelector('[score1]').innerHTML = score1 ; 
                 }
                 if((score2.charAt(0) >= '0' && score2.charAt(0) <= '9') || score2.charAt(0) === '-'){
-                    this.shadowRoot.querySelector('[score2]').innerHTML = score2 ; 
+                    if(this.score2.charAt(0) === '0')
+                        this.shadowRoot.querySelector('[score2]').innerHTML = '-'; 
+                    else
+                        this.shadowRoot.querySelector('[score2]').innerHTML = score2 ; 
                 }
                 if(score2.charAt(0) === '/'){
                     this.shadowRoot.querySelector('[spare2]').classList.remove('hidden') ; 

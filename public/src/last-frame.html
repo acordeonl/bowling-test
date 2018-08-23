@@ -152,10 +152,16 @@
                     this.shadowRoot.querySelector('[spare2]').classList.remove('hidden') ; 
                 }
                 if((score1.charAt(0) >= '0' && score1.charAt(0) <= '9') || score1.charAt(0) === '-'){
-                    this.shadowRoot.querySelector('[score1]').innerHTML = score1 ; 
+                    if(this.score1.charAt(0) === '0')
+                        this.shadowRoot.querySelector('[score1]').innerHTML = '-'; 
+                    else
+                        this.shadowRoot.querySelector('[score1]').innerHTML = score1 ; 
                 }
                 if((score2.charAt(0) >= '0' && score2.charAt(0) <= '9') || score2.charAt(0) === '-'){
-                    this.shadowRoot.querySelector('[score2]').innerHTML = score2 ; 
+                    if(this.score2.charAt(0) === '0')
+                        this.shadowRoot.querySelector('[score2]').innerHTML = '-'; 
+                    else
+                        this.shadowRoot.querySelector('[score2]').innerHTML = score2 ; 
                 }
                 if(score2.charAt(0) === '/'){
                     this.shadowRoot.querySelector('[spare2]').classList.remove('hidden') ; 
@@ -165,7 +171,10 @@
                         this.shadowRoot.querySelector('[spare3]').classList.remove('hidden') ; 
                     }
                     if((score3.charAt(0) >= '0' && score3.charAt(0) <= '9') || score3.charAt(0) === '-'){
-                        this.shadowRoot.querySelector('[score3]').innerHTML = score3 ; 
+                        if(this.score3.charAt(0) === '0')
+                            this.shadowRoot.querySelector('[score3]').innerHTML = '-'; 
+                        else
+                            this.shadowRoot.querySelector('[score3]').innerHTML = score3 ; 
                     }
                     if(score3.charAt(0) === '/'){
                         this.shadowRoot.querySelector('[spare3]').classList.remove('hidden') ; 
