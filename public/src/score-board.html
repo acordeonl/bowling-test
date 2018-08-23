@@ -1,6 +1,7 @@
 <link rel="import" href="/bower_components/polymer/polymer-element.html">
 <link rel="import" href="/bower_components/polymer/lib/elements/dom-repeat.html">
 <link rel="import" href="./score-frame.html">
+<link rel="import" href="./last-frame.html">
 <link rel="import" href="/bower_components/paper-input/paper-input.html">
 
 
@@ -15,6 +16,7 @@
             <template id="domRepeat" list is="dom-repeat" items="{{_computeFrameValues(rolls)}}" as="frame">
                 <score-frame id='frame_[[index]]' frame-number=[[index]] score1=[[frame.score1]] score2=[[frame.score2]] score-result=[[frame.result]]> </score-frame>
             </template>
+            <last-frame id='frame_9' frame-number='9' score1='[[lastScore1]]' score2='[[lastScore2]]' score3='[[lastScore3]]' score-result='[[totalScore]]'>  </last-frame>
         </div>
         <paper-input value='{{rolls}}'>  </paper-input>
     </template>
@@ -27,11 +29,15 @@
                 return {
                     rolls: {
                         type: String,
-                        value: '5/5/5/5/5/5/5/5/5/'
+                        value: '5/5/5/5/5/5/5/5/5/5/5'
                     },
                     frameValues: {
                         type: Array
-                    }
+                    },
+                    lastScore1:{type:String,value:""},
+                    lastScore2:{type:String,value:""},
+                    lastScore3:{type:String,value:""},
+                    totalScore:{type:String,value:""}
                 }
             }
             constructor() {
@@ -49,42 +55,61 @@
                 let frameScores = result.frameScores ; 
                 let res = [];
                 let frame = 0;
-                let frameObject = {};
+                let frameObject = {score1:"",score2:"",score3:"",result:""};
                 let frameValues = [];
                 
                 for (let i = 0; i < rolls.length; i++) {
                     if (rolls[i] !== 'X' && rolls[i] !== '/') { // dígitos
                         frame += 0.5 ;
-                        if (frameObject.score1 === undefined)
+                        if (frameObject.score1 === "")
                             frameObject.score1 = rolls[i];
-                        else if (frameObject.score2 === undefined)
+                        else if (frameObject.score2 === "")
                             frameObject.score2 = rolls[i];
+                        else if(frameObject.score3 === "")
+                            frameObject.score3 = rolls[i] ; 
                     } else if (rolls[i] === '/') { // spare
                         frame += 0.5;
-                        frameObject.score2 = '/' ; 
+                        if(frameObject.score2 === "")
+                            frameObject.score2 = '/' ;  
+                        else if(frameObject.score3 === "")
+                            frameObject.score3 = '/' ; 
                     } else { // strike 
                         frame += 1;
-                        frameObject.score1 = 'X' ; 
+                        if(frameObject.score1 === "")
+                            frameObject.score1 = 'X' ;
+                        else if(frameObject.score2 === "")
+                            frameObject.score2 = 'X' ;  
+                        else if(frameObject.score3 === "")
+                            frameObject.score3 = 'X' ; 
                     }
                     if (Number.isInteger(frame) && frame < 10) {
                         frameObject.result = frameScores[frame-1] ;
                         frameValues.push(frameObject);
-                        frameObject = {};
+                        frameObject = {score1:"",score2:"",score3:"",result:""}
                     }
                 }
-                if(!Number.isInteger(frame) && frame < 10) {
-                    frameObject.result = frameScores[frame-1] ;
-                    frameValues.push(frameObject);
-                    frameObject = {};
+                console.log(frame);
+                console.log(frameObject);
+                if(frame >= 9){
+                    this.lastScore1 = frameObject.score1  ;
+                    this.lastScore2 = frameObject.score2 ;
+                    this.lastScore3 = frameObject.score3 ;
                 }
-                for(let i = 0 ; i < 10-frame ; i ++ ){
-                    frameValues.push({
-                        score1:"",
-                        score2:"",
-                        result:""
-                    }) ; 
+                else if (frame < 9){
+                    this.lastScore1 = "" ;
+                    this.lastScore2 = "" ;
+                    this.lastScore3 = "" ;
+                    frameValues.push(frameObject) ; 
+                    for(let i = 0 ; i < 8-frame ; i ++ ){
+                        frameValues.push({
+                            score1:"",
+                            score2:"",
+                            score3:"",
+                            result:""
+                        }) ; 
+                    }
                 }
-                console.log(frameValues);
+                
                 return frameValues ;
             }
         }

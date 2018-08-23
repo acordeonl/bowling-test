@@ -1,6 +1,6 @@
 <link rel="import" href="/bower_components/polymer/polymer-element.html">
 
-<dom-module id="score-frame">
+<dom-module id="last-frame">
     <template>
         <style>
             [frame-number]{
@@ -8,7 +8,7 @@
                 @apply --layout-vertical;
                 /* text-align: center ;  */
                 height:30px;
-                width:94px;
+                width:143px;
                 margin-left:2px ; 
                 margin-right: 2px ; 
                 background-color: #308b8b;
@@ -21,7 +21,7 @@
             [frame-scores]{
                 @apply --layout-horizontal;
                 height:45px;
-                width:98px;
+                width:147px;
                 margin-bottom: 4px; 
             }
             [score]{
@@ -48,7 +48,7 @@
             }
             [frame-result]{
                 height:74px;
-                width:94px;
+                width:143px;
                 margin-left:2px ; 
                 margin-right: 2px ;
                 background-color: blue ;
@@ -56,6 +56,7 @@
                 border-radius: 5px;
                 font-size: 25px;
                 color: rgb(68, 65, 65) ;
+                font-weight: 500;
             } 
             .shadow{
                 box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14),
@@ -90,39 +91,47 @@
                 <div spare2 class='spare hidden'></div>
                 <div score2></div>
             </div>
+            <div class='shadow score centeredContent ' score>
+                <div spare3 class='spare hidden'></div>
+                <div score3></div>
+            </div>
         </div>
         <div class='shadow centeredContent' frame-result>
             [[scoreResult]]
         </div>
     </template>
     <script>
-        class ScoreFrame extends Polymer.Element {
-            static get is() { return 'score-frame'; }
+        class LastFrame extends Polymer.Element {
+            static get is() { return 'last-frame'; }
             static get observers() {return [
-                '_updateScores(score1,score2)'
+                '_updateScores(score1,score2,score3)'
             ]}
             static get properties() {return {
                 frameNumber:{type:Number,value:1},
-                scoreResult:{type:String,value:"24"},
-                score1:{type:String,value:"2"},
-                score2:{type:String,value:"5"}
+                scoreResult:{type:String,value:""},
+                score1:{type:String,value:""},
+                score2:{type:String,value:""},
+                score3:{type:String,value:""},
             }}
             constructor() {
                 super();
             }
             _computeFrameNumber(number) {
-                return number+1; 
+                return number+1;
             }
-            _updateScores(score1,score2) {
+            _updateScores(score1,score2,score3) {
                 this.shadowRoot.querySelector('[score1]').innerHTML = "" ;
                 this.shadowRoot.querySelector('[score2]').innerHTML = "" ;
+                this.shadowRoot.querySelector('[score3]').innerHTML = "" ;
                 this.shadowRoot.querySelector('[spare1]').classList.add('hidden') ; 
                 this.shadowRoot.querySelector('[spare2]').classList.add('hidden') ; 
+                this.shadowRoot.querySelector('[spare3]').classList.add('hidden') ; 
 
                 if (score1.charAt(0) === 'X'){
                     this.shadowRoot.querySelector('[spare1]').classList.remove('hidden') ; 
+                }
+                if (score2.charAt(0) === 'X'){
                     this.shadowRoot.querySelector('[spare2]').classList.remove('hidden') ; 
-                    return ; 
                 }
                 if((score1.charAt(0) >= '0' && score1.charAt(0) <= '9') || score1.charAt(0) === '-'){
                     this.shadowRoot.querySelector('[score1]').innerHTML = score1 ; 
@@ -133,8 +142,19 @@
                 if(score2.charAt(0) === '/'){
                     this.shadowRoot.querySelector('[spare2]').classList.remove('hidden') ; 
                 }
+                if(score3.length > 0 ){
+                    if (score3.charAt(0) === 'X'){
+                        this.shadowRoot.querySelector('[spare3]').classList.remove('hidden') ; 
+                    }
+                    if((score3.charAt(0) >= '0' && score3.charAt(0) <= '9') || score3.charAt(0) === '-'){
+                        this.shadowRoot.querySelector('[score3]').innerHTML = score3 ; 
+                    }
+                    if(score3.charAt(0) === '/'){
+                        this.shadowRoot.querySelector('[spare3]').classList.remove('hidden') ; 
+                    }
+                }
             }
         }
-        customElements.define('score-frame', ScoreFrame);
+        customElements.define('last-frame', LastFrame);
     </script>
 </dom-module>
