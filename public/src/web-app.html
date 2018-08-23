@@ -1,0 +1,66 @@
+<polymer2>
+    <link rel="import" href="../bower_components/polymer/lib/elements/dom-repeat.html">
+    <link rel="import" href="../bower_components/polymer/lib/elements/dom-if.html">
+    <link rel="import" href="../bower_components/polymer/lib/utils/import-href.html">
+    <link rel="import" href="../bower_components/neon-animation/web-animations.html">
+    <link rel="import" href="../bower_components/shadycss/apply-shim.html">
+    <link rel="import" href="../bower_components/polymer/lib/utils/render-status.html">
+    <!-- paper-material deprecated -->
+    <link rel="import" href="../bower_components/paper-styles/shadow.html">
+</polymer2>
+<link rel="import" href="/bower_components/polymer/polymer-element.html">
+<link rel="import" href='./icon-imports.html'>
+<link rel="import" href="./score-board.html">
+
+<imports>
+    <!-- <link rel="import" href="../bower_components/paper-spinner/paper-spinner-lite.html" async>
+    <link rel="import" href='../bower_components/polymer/polymer-element.html'>
+    <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+    <link rel="import" href="../bower_components/app-route/app-location.html">
+    <link rel="import" href="../bower_components/app-route/app-route.html">
+    <link rel="import" href="../bower_components/app-route/app-route-converter.html">
+    <link rel="import" href="../bower_components/neon-animation/neon-animated-pages.html">
+    <link rel="import" href="../bower_components/neon-animation/neon-animation-runner-behavior.html">
+    <link rel="import" href="../bower_components/neon-animation/neon-animations.html">
+    <link rel="import" href="../bower_components/neon-animation/neon-shared-element-animatable-behavior.html">
+    <link rel="import" href="../bower_components/local-dom/local-dom.html">
+    <link rel="import" href='./icon-imports.html'>
+    <link rel="import" href="../bower_components/paper-toast/paper-toast.html">
+    <link rel="import" href="./ac-components/animation-behaviors/ripple-to.html">
+    <link rel="import" href="./ac-components/page-views/view-layout.html" >
+    <link rel="import" href="../bower_components/paper-button/paper-button.html"> -->
+</imports>
+
+<dom-module id="web-app">
+    <template>
+        <style>
+            [wrapper] {
+                margin-top: 200px;
+                width: 100%;
+               @apply --layout-center;
+               @apply --layout-vertical;
+               @apply --layout-center-justified;
+            }
+        </style>
+        <div wrapper>
+            <score-board> </score-board>
+        </div>
+    </template>
+    <script>
+        class WebApp extends Polymer.Element {
+            static get is() {
+                return 'web-app';
+            }
+            static get properties() {
+                return {}
+            }
+            constructor() {
+                super();
+            }
+            ready() {
+                super.ready();
+            }
+        }
+        customElements.define('web-app', WebApp);
+    </script>
+</dom-module>

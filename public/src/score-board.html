@@ -1,0 +1,93 @@
+<link rel="import" href="/bower_components/polymer/polymer-element.html">
+<link rel="import" href="/bower_components/polymer/lib/elements/dom-repeat.html">
+<link rel="import" href="./score-frame.html">
+<link rel="import" href="/bower_components/paper-input/paper-input.html">
+
+
+<dom-module id="score-board">
+    <template>
+        <style>
+            [wrapper] {
+                @apply --layout-horizontal;
+            }
+        </style>
+        <div wrapper>
+            <template id="domRepeat" list is="dom-repeat" items="{{_computeFrameValues(rolls)}}" as="frame">
+                <score-frame id='frame_[[index]]' frame-number=[[index]] score1=[[frame.score1]] score2=[[frame.score2]] score-result=[[frame.result]]> </score-frame>
+            </template>
+        </div>
+        <paper-input value='{{rolls}}'>  </paper-input>
+    </template>
+    <script>
+        class ScoreBoard extends Polymer.Element {
+            static get is() {
+                return 'score-board';
+            }
+            static get properties() {
+                return {
+                    rolls: {
+                        type: String,
+                        value: '5/5/5/5/5/5/5/5/5/'
+                    },
+                    frameValues: {
+                        type: Array
+                    }
+                }
+            }
+            constructor() {
+                super();
+            }
+            _isDigit(ch) {
+                if (ch >= '0' && ch <= '9')
+                    return true;
+                return false;
+            }
+            _computeFrameValues(rolls) {
+                // use backend
+                let result = app___computeScore(rolls) ;
+
+                let frameScores = result.frameScores ; 
+                let res = [];
+                let frame = 0;
+                let frameObject = {};
+                let frameValues = [];
+                
+                for (let i = 0; i < rolls.length; i++) {
+                    if (rolls[i] !== 'X' && rolls[i] !== '/') { // dígitos
+                        frame += 0.5 ;
+                        if (frameObject.score1 === undefined)
+                            frameObject.score1 = rolls[i];
+                        else if (frameObject.score2 === undefined)
+                            frameObject.score2 = rolls[i];
+                    } else if (rolls[i] === '/') { // spare
+                        frame += 0.5;
+                        frameObject.score2 = '/' ; 
+                    } else { // strike 
+                        frame += 1;
+                        frameObject.score1 = 'X' ; 
+                    }
+                    if (Number.isInteger(frame) && frame < 10) {
+                        frameObject.result = frameScores[frame-1] ;
+                        frameValues.push(frameObject);
+                        frameObject = {};
+                    }
+                }
+                if(!Number.isInteger(frame) && frame < 10) {
+                    frameObject.result = frameScores[frame-1] ;
+                    frameValues.push(frameObject);
+                    frameObject = {};
+                }
+                for(let i = 0 ; i < 10-frame ; i ++ ){
+                    frameValues.push({
+                        score1:"",
+                        score2:"",
+                        result:""
+                    }) ; 
+                }
+                console.log(frameValues);
+                return frameValues ;
+            }
+        }
+        customElements.define('score-board', ScoreBoard);
+    </script>
+</dom-module>

@@ -1,0 +1,221 @@
+<imports >
+    <link rel="import" href="../polymer/polymer-element.html">
+    <link rel="import" href="../polymer/lib/utils/render-status.html">
+    <link rel="import" href="../polymer/lib/elements/dom-repeat.html">
+    <link rel="import" href="../paper-icon-button/paper-icon-button.html">
+    <link rel="import" href="../iron-icons/iron-icons.html">
+    <link rel="import" href="../iron-icon/iron-icon.html">
+    <link rel="import" href="../paper-ripple/paper-ripple.html">
+    <link rel="import" href="../neon-animation/neon-animations.html">
+    <link rel="import" href="../neon-animation/neon-animation-runner-behavior.html">
+    <link rel="import" href="../iron-media-query/iron-media-query.html">
+    <link rel="import" href="../paper-styles/shadow.html">
+</imports>
+
+<dom-module id="drop-menu">
+    <template>
+        <style button>
+            paper-icon-button {
+                @apply --icon-button;
+            }
+            paper-icon-button:hover {
+                color: var(--theme-color1,#4775D1);
+            }
+        </style>
+        <style menu>
+            [menuHolder] {
+                position: absolute;
+                right: 5px;
+                margin-top: 5px;
+            }
+            [paper-material] {
+                @apply --shadow-elevation-6dp;
+            }
+            [desktop] [paper-material] {
+                margin-right: 17px;
+            }
+            [desktop][overlay] [paper-material] {
+                margin-right: 0;
+            }
+            [paper-material] {
+                background-color: var(--content-background ,white);
+                border-radius: 4px;
+                min-width: 170px;
+            }
+            [overlay] {
+                right: -5px;
+                top: -10px;
+            }
+            [wrapper] {
+                @apply --layout-center;
+                @apply --layout-vertical;
+                margin-top: 10px;
+                margin-bottom: 10px;
+                width: 100%;
+                @apply --layout-end-justified;
+            }
+            [itemWrapper] {
+                position: relative;
+                width: 100%;
+                height: 100%;
+                cursor: pointer;
+            }
+            [itemWrapper]:hover {
+                background-color: var(--item-background-color,#f1ecef);
+            }
+            [listItem] {
+                color: var(--item-color,#302f31);
+                white-space: nowrap;
+                height: 40px;
+                width: 80%;
+                margin: 10px 25px;
+                @apply --layout-center;
+                @apply --layout-horizontal;
+            }
+        </style>
+        <style>
+            :host {
+                position:relative;
+                z-index: 100 ;
+                --content-background: white;
+                --icon-button: {
+                    
+                };
+            }
+        </style>
+        <iron-media-query query="(min-width:901px)" query-matches="{{desktop}}"></iron-media-query>
+        <paper-icon-button on-click="open" icon="more-vert"></paper-icon-button>
+        <div menuHolder overlay$={{overlayMenu}} desktop$="{{desktop}}">
+            <div paper-material id="menu">
+                <a id="toFocus" on-blur="_unFocus" href=""></a>
+                <div wrapper>
+                    <template id="domRepeat" is="dom-repeat" items="{{list}}">
+                        <div on-click="_action" action={{item}} itemWrapper id="item{{index}}">
+                            <paper-ripple></paper-ripple>
+                            <div listItem>
+                                {{item}}
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </template>
+    <script>
+        var sleep = n => new Promise(resolve => setTimeout(resolve, n));
+        class DropMenu extends Polymer.mixinBehaviors([Polymer.NeonAnimationRunnerBehavior], Polymer.Element)  {
+            static get is() { return 'drop-menu'; }
+            static get properties() {return {
+                list: {type: Array},
+                // OverlayMenu at opening button
+                overlayMenu: {type: Boolean,value: false},
+                // Displayed menu items
+                listItems: {type: Array,value: ['default']},
+                // States if drop-menu is opened or close
+                state: {type: String,value: 'closed'}
+            }}
+            constructor() {
+                super();
+            }
+            _action (e) {
+                this.fire('menu-action',{id:e.currentTarget.id})
+            }
+            _finishedAnim (e) {
+                if (this.state === 'closing') {
+                    this.$.menu.style.display = 'none';
+                    this.state = 'closed';
+                }
+                if (this.state === 'opening') {
+                    this.state = 'open';
+                }
+            }
+            /**
+             * Opens drop-menu
+             */
+            open () {
+                if (this.state === 'closed') {
+                    this.$.menu.style.display = 'inline-block';
+                    this.playAnimation('open');
+                    this.$.toFocus.focus();
+                    this.state = 'opening';
+                }
+            }
+            /**
+             * Closes drop-menu
+             */
+            close () {
+                if (this.state === 'open') {
+                    this.playAnimation('close');
+                    this.state = 'closing';
+                }
+            }
+            async _unFocus () {
+                await sleep(200);
+                this.playAnimation('close');
+                this.state = 'closing';
+            }
+            connectedCallback() {
+                super.connectedCallback();
+                Polymer.RenderStatus.afterNextRender(this, function() {
+                    var nodeList = Polymer.dom(this.root).querySelectorAll('[itemWrapper]');
+                    this.animationConfig.open[3].nodes = Array.prototype.slice.call(nodeList);
+                });
+            }
+            ready() {
+                super.ready() ;
+                this.animationConfig = {
+                    'open': [
+                        {
+                            name: 'slide-down-animation',
+                            node: this.$.menu,
+                            timing: {
+                                duration: 200
+                            }
+                        }, {
+                            name: 'scale-up-animation',
+                            node: this.$.menu,
+                            transformOrigin: 'right top',
+                            timing: {
+                                duration: 200
+                            }
+                        }, {
+                            name: 'fade-in-animation',
+                            node: this.$.menu,
+                            timing: {
+                                duration: 200
+                            }
+                        }, {
+                            name: 'cascaded-animation',
+                            animation: 'fade-in-animation',
+                            timing: {
+                                delay: 50
+                            }
+                        }
+                    ],
+                    'close': [
+                        {
+                            name: 'slide-up-animation',
+                            node: this.$.menu
+                        }, {
+                            name: 'scale-down-animation',
+                            node: this.$.menu,
+                            transformOrigin: 'right top'
+                        }, {
+                            name: 'fade-out-animation',
+                            node: this.$.menu,
+                            timing: {
+                                duration: 300
+                            }
+                        }
+                    ]
+                }
+                this.$.menu.style.display = 'none';
+                this.list = this.listItems;
+                Polymer.RenderStatus.afterNextRender(this, function() {
+                    this.addEventListener('neon-animation-finish', e => this._finishedAnim(e));
+                });
+            }
+        }
+        customElements.define('drop-menu', DropMenu);
+    </script>
+</dom-module>

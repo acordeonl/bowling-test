@@ -1,0 +1,180 @@
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../polymer/lib/elements/dom-if.html">
+<link rel="import" href="../paper-dialog/paper-dialog.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+
+<dom-module id="prompt-dialog">
+    <template>
+        <style dialog-title>
+            .withoutTopMargin{
+                margin-bottom: 0px ; 
+            }
+            .withTopMargin{
+                margin-bottom: 20px ;
+            }
+            [dialog-title] {
+                font-size: 22px;
+                @apply --layout-horizontal;
+                @apply --layout-center;
+                color: var(--content-color2,#636363) ;
+            }
+            [title]{
+                width: 100% ;
+                @apply --layout-center-justified;
+                @apply --layout-horizontal;
+            }
+            [exit-button-invisible]{
+                visibility: hidden;
+            }
+            paper-icon-button{
+                margin-left:-10px ;
+                margin-top: -20px ;
+                margin-right: 12px ;
+                color:var(--content-color2,#636363) ;
+                border-radius: 100% ;
+                font-weight: 300 ;
+            }
+            paper-icon-button:hover{
+                color:var(--theme-color1,#4775D1) ;
+            }
+        </style>
+        <style dialog-content>
+            [dialog-content]{
+                width: 100% ;
+                font-size: 20px ;
+                padding-left: 5px ;
+                padding-right: 5px ;
+                @apply --layout-center-justified;
+                @apply --layout-horizontal;
+                @apply --layout-center;
+                line-height: 1.3;
+            }
+        </style>
+        <style dialog-buttons>
+            [dialog-buttons]{
+                width: 100% ;
+                @apply --layout-horizontal;
+                @apply --layout-center-justified;
+            }
+            paper-button{
+                font-weight: 400 ;
+                margin-top: 30px ;
+                width: 45% ;
+                color: var(--content-background,#fafafa) ;
+                font-size: 16px ;
+                background-color: var(--theme-color1,#4775D1) ;
+            }
+        </style>
+        <style>
+            paper-dialog {
+                will-change:transform ;
+                top:7vh ;
+                margin-bottom:11vh ;
+                font-size: 22px;
+                font-weight: 300;
+                width: 450px;
+                overflow: auto;
+                border-radius: 10px;
+                color:var(--content-color,#212121) ;
+                background-color: var(--content-background,#fafafa) ;
+            }
+        </style>
+        <paper-dialog on-opened-changed='_onOpenedChanged' no-cancel-on-outside-click=[[noCancelOnOutsideClick]] entry-animation="scale-up-animation" exit-animation="fade-out-animation" id="dialog" with-backdrop>
+            <div wrapper>
+                <template is="dom-if" if="[[dialogTitle]]" >
+                    <div dialog-title class$='[[_getTopMargin(withoutTopMargin)]]'>
+                        <div exit-button>
+                            <paper-icon-button on-click="close" icon="close"></paper-icon-button>
+                        </div>
+                        <div title>
+                            {{dialogTitle}}
+                        </div>
+                        <div exit-button-invisible>
+                            <paper-icon-button on-click="close" icon="close"></paper-icon-button>
+                        </div>
+                    </div>
+                </template>
+                <div dialog-content>
+                    <template is="dom-if" if="[[withMessage]]">
+                        {{message}}
+                    </template>
+                    <template is="dom-if" if="[[!withMessage]]">
+                        <slot>
+                        </slot>
+                    </template>
+                </div>
+                <div dialog-buttons>
+                    <template is="dom-if" if="[[cancelButton]]" >
+                        <paper-button on-click="_action" id="cancel">{{cancelButton}}</paper-button>
+                    </template>
+                    <template is="dom-if" if="[[confirmButton]]" >
+                        <paper-button on-click="_action" id="confirm">{{confirmButton}}</paper-button>
+                    </template>
+                </div>
+            </div>
+        </paper-dialog>
+        <!-- <div backdrop>
+
+        </div> -->
+    </template>
+    <script>
+        class PromptDialog extends Polymer.Element {
+            static get is() { return 'prompt-dialog'; }
+            static get properties() {return {
+                withoutTopMargin:{type:Boolean,value:false},
+                noCancelOnOutsideClick:{type:Boolean,value:false},
+                dialogTitle:{type:String},
+                confirmButton:{type:String},
+                cancelButton:{type:String},
+                withMessage:{type:Boolean,value:false},
+                message:{type:String},
+                hasRecaptcha:{type:Boolean,value:false},
+            }}
+            constructor() {
+                super();
+            }
+            _onOpenedChanged(e) {
+                if(!this.hasRecaptcha)
+                    return ; 
+                if(e.detail.value)
+                    displayRecaptcha() ; 
+                else
+                    hideRecaptcha() ;
+            }
+            _getTopMargin(withoutTopMargin) {
+                if(withoutTopMargin)
+                    return 'withoutTopMargin' ; 
+                return 'withTopMargin' ; 
+            }
+            _action (e){
+                this.dispatchEvent(new CustomEvent('prompt-dialog-action', {detail:{
+                    action:e.currentTarget.id
+                }, bubbles: true, composed: true }));
+                this.$.dialog.close() ;
+            }
+            open  () {
+                this.$.dialog.open();
+            }
+            close (){
+                this.$.dialog.close() ;
+            }
+            async _updateDialogClickBehavior(e) {
+                if(!e.detail.opened) 
+                    await sleep(100);
+                this.noCancelOnOutsideClick = e.detail.opened ;
+            }
+            ready() {
+                super.ready() ;
+                
+                Polymer.RenderStatus.afterNextRender(this, function() {
+                    this.addEventListener('combo-box-action', e => this._updateDialogClickBehavior(e));
+                    if(this.cancelButton === undefined && this.confirmButton !== undefined){
+                        this.shadowRoot.querySelector('#confirm').style.width ='90%' ; 
+                    }
+                });
+            }
+        }
+        customElements.define('prompt-dialog', PromptDialog);
+    </script>
+</dom-module>

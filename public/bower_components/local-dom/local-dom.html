@@ -1,0 +1,27 @@
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../iron-media-query/iron-media-query.html">
+
+<dom-module id="local-dom">
+    <template>
+        <style>
+        </style>
+        <iron-media-query query="(max-width:700px)" query-matches="{{mobile}}"></iron-media-query>
+        <iron-media-query query="(min-width:701px) and (max-width:900px)" query-matches="{{tablet}}"></iron-media-query>
+        <iron-media-query query="(min-width:901px)" query-matches="{{laptop}}"></iron-media-query>
+        <slot></slot>
+    </template>
+    <script>
+        class LocalDom extends Polymer.Element {
+            static get is() { return 'local-dom'; }
+            static get properties() {return {
+                mobile: {type: Boolean,notify: true,reflectToAttribute: true},
+                tablet: {type: Boolean,notify: true,reflectToAttribute: true},
+                laptop: {type: Boolean,notify: true,reflectToAttribute: true}
+            }}
+            constructor() {
+                super();
+            }
+        }
+        customElements.define('local-dom', LocalDom);
+    </script>
+</dom-module>
