@@ -13,6 +13,7 @@
 <link rel="import" href="./score-board.html">
 
 <imports>
+        <link rel="import" href="/bower_components/paper-icon-button/paper-icon-button.html">
     <!-- <link rel="import" href="../bower_components/paper-spinner/paper-spinner-lite.html" async>
     <link rel="import" href='../bower_components/polymer/polymer-element.html'>
     <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
@@ -35,15 +36,20 @@
     <template>
         <style>
             [wrapper] {
-                margin-top: 200px;
+                margin-top: 150px;
                 width: 100%;
                @apply --layout-center;
                @apply --layout-vertical;
                @apply --layout-center-justified;
             }
+            score-board:hover{
+                opacity: 0.9; 
+                cursor: pointer ;
+            }
         </style>
         <div wrapper>
-            <score-board> </score-board>
+            <score-board on-click='_selectScoreBoard' id='scoreboard_0' selected ='true'> </score-board>
+            <score-board on-click='_selectScoreBoard' id='scoreboard_1' > </score-board>
         </div>
     </template>
     <script>
@@ -52,13 +58,33 @@
                 return 'web-app';
             }
             static get properties() {
-                return {}
+                return {
+                    currentPlayer:{type:Number,value:0},
+                }
             }
             constructor() {
                 super();
             }
+            _selectScoreBoard(e) {
+                this.shadowRoot.querySelector('#'+e.currentTarget.id).selected = true ; 
+                this.shadowRoot.querySelector('#scoreboard_'+this.currentPlayer).selected = false ; 
+                this.currentPlayer = e.currentTarget.id.split('_')[1] ; 
+                this.shadowRoot.querySelector('#scoreboard_'+this.currentPlayer).selected = true ; 
+            }
+            _goToNextPlayer() {
+                Polymer.RenderStatus.afterNextRender(this, function() {
+                    let arr = Polymer.dom(this.root).querySelectorAll('score-board');
+                    if(arr.length === 1)
+                        return ;
+                    this.shadowRoot.querySelector('#scoreboard_'+this.currentPlayer).selected = false ; 
+                    this.currentPlayer ++ ; 
+                    this.currentPlayer %= arr.length ;
+                    this.shadowRoot.querySelector('#scoreboard_'+this.currentPlayer).selected = true ; 
+                });
+            }
             ready() {
                 super.ready();
+                this.addEventListener('rolls-computed', e => this._goToNextPlayer(e));
             }
         }
         customElements.define('web-app', WebApp);

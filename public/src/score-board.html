@@ -11,6 +11,9 @@
             [wrapper] {
                 @apply --layout-horizontal;
             }
+            #rollsInput{
+                /* opacity: 0 ; */
+            }
         </style>
         <div wrapper>
             <template id="domRepeat" list is="dom-repeat" items="{{_computeFrameValues(rolls)}}" as="frame">
@@ -18,7 +21,7 @@
             </template>
             <last-frame id='frame_9' frame-number='9' score1='[[lastScore1]]' score2='[[lastScore2]]' score3='[[lastScore3]]' score-result='[[totalScore]]'>  </last-frame>
         </div>
-        <paper-input value='{{rolls}}'>  </paper-input>
+        <paper-input id='rollsInput' value='{{rolls}}'>  </paper-input>
     </template>
     <script>
         class ScoreBoard extends Polymer.Element {
@@ -34,6 +37,7 @@
                     frameValues: {
                         type: Array
                     },
+                    selected:{type:Boolean,value:false,observer:'_updateSelection'},
                     currentRoll:{type:Number,value:0},
                     selectedFrame:{type:Number,value:0},
                     lastScore1:{type:String,value:""},
@@ -45,6 +49,16 @@
             constructor() {
                 super();
             }
+            _updateSelection(selected) {
+                Polymer.RenderStatus.afterNextRender(this, function() {
+                    if(!selected)
+                        this.shadowRoot.querySelector('#frame_'+this.selectedFrame).selected = false ; 
+                    else{
+                        this.shadowRoot.querySelector('#frame_'+this.selectedFrame).selected = true ; 
+                        this.$.rollsInput.focus() ;
+                    }
+                });
+            }
             _isDigit(ch) {
                 if (ch >= '0' && ch <= '9')
                     return true;
@@ -53,7 +67,6 @@
             _computeFrameValues(rolls) {
                 // use backend
                 let result = app___computeScore(rolls) ;
-
                 let frameScores = result.frameScores ; 
                 let res = [];
                 let frame = 0;
@@ -94,11 +107,11 @@
                     this.lastScore1 = frameObject.score1  ;
                     this.lastScore2 = frameObject.score2 ;
                     this.lastScore3 = frameObject.score3 ;
-                    if(this._isDigit(this.lastScore2) || this.lastScore3 !== ""){
+                    if(this._isDigit(this.lastScore2) || this.lastScore2 === "-"){
                         this.done = true ; 
                         this.totalScore = result.score ;
-                        console.log(this.selectedFrame);
                         this.shadowRoot.querySelector('#frame_'+this.selectedFrame).selected = false ; 
+                        this.dispatchEvent(new CustomEvent('rolls-computed', { bubbles: true, composed: true }));
                     }
                     else{
                         this.totalScore = "" ; 
@@ -127,6 +140,7 @@
                         this.selectedFrame = Math.floor(frame) ;
                         this.selectedFrame = Math.min(this.selectedFrame,9) ;
                         this.shadowRoot.querySelector('#frame_'+this.selectedFrame).selected = true ; 
+                        this.dispatchEvent(new CustomEvent('rolls-computed', { bubbles: true, composed: true }));
                     }
                 });
                 return frameValues ;
