@@ -43,7 +43,7 @@
             }
             .selected{
                 background-color: #308b8b ;
-                opacity: 0.7; 
+                opacity: 0.4; 
                 color:white ; 
             }
             [frame-result]{
@@ -83,15 +83,15 @@
             <div >[[_computeFrameNumber(frameNumber)]]</div>
         </div>
         <div  frame-scores>
-            <div  class='shadow score centeredContent ' score>
+            <div score1Holder  class='shadow score centeredContent ' score>
                 <div spare1 class='spare hidden'></div>
                 <div score1></div>
             </div>
-            <div class='shadow score centeredContent ' score>
+            <div score2Holder class='shadow score centeredContent ' score>
                 <div spare2 class='spare hidden'></div>
                 <div score2></div>
             </div>
-            <div class='shadow score centeredContent ' score>
+            <div score3Holder class='shadow score centeredContent ' score>
                 <div spare3 class='spare hidden'></div>
                 <div score3></div>
             </div>
@@ -107,6 +107,7 @@
                 '_updateScores(score1,score2,score3)'
             ]}
             static get properties() {return {
+                selected:{type:Boolean,value:false,observer:'_updateSelection'},
                 frameNumber:{type:Number,value:1},
                 scoreResult:{type:String,value:""},
                 score1:{type:String,value:""},
@@ -118,6 +119,33 @@
             }
             _computeFrameNumber(number) {
                 return number+1;
+            }
+            _updateSelection() {
+                if(this.selected){
+                    if(this.score1 === ""){
+                        this.shadowRoot.querySelector('[score2Holder]').classList.remove('selected') ; 
+                        this.shadowRoot.querySelector('[score3Holder]').classList.remove('selected') ; 
+                        this.shadowRoot.querySelector('[score1Holder]').classList.add('selected') ;
+                        console.log('en 1 ');
+                    }
+                    else if(this.score2 === ""){
+                        this.shadowRoot.querySelector('[score1Holder]').classList.remove('selected') ; 
+                        this.shadowRoot.querySelector('[score3Holder]').classList.remove('selected') ; 
+                        this.shadowRoot.querySelector('[score2Holder]').classList.add('selected') ;
+                        console.log('en 2');
+                    }
+                    else if(this.score3 === ""){
+                        this.shadowRoot.querySelector('[score1Holder]').classList.remove('selected') ; 
+                        this.shadowRoot.querySelector('[score2Holder]').classList.remove('selected') ; 
+                        this.shadowRoot.querySelector('[score3Holder]').classList.add('selected') ;
+                        console.log('en 2');
+                    }
+                }
+                else{
+                    this.shadowRoot.querySelector('[score1Holder]').classList.remove('selected') ; 
+                    this.shadowRoot.querySelector('[score2Holder]').classList.remove('selected') ; 
+                    this.shadowRoot.querySelector('[score3Holder]').classList.remove('selected') ; 
+                }
             }
             _updateScores(score1,score2,score3) {
                 this.shadowRoot.querySelector('[score1]').innerHTML = "" ;
