@@ -39,7 +39,7 @@
                     },
                     selected:{type:Boolean,value:false,observer:'_updateSelection'},
                     currentRoll:{type:Number,value:0},
-                    selectedFrame:{type:Number,value:0},
+                    selectedFrame:{type:Number,value:0,observer:'_nextTurn'},
                     lastScore1:{type:String,value:""},
                     lastScore2:{type:String,value:""},
                     lastScore3:{type:String,value:""},
@@ -48,6 +48,9 @@
             }
             constructor() {
                 super();
+            }
+            _nextTurn() {
+                this.dispatchEvent(new CustomEvent('rolls-computed', { bubbles: true, composed: true }));
             }
             _updateSelection(selected) {
                 Polymer.RenderStatus.afterNextRender(this, function() {
@@ -107,11 +110,12 @@
                     this.lastScore1 = frameObject.score1  ;
                     this.lastScore2 = frameObject.score2 ;
                     this.lastScore3 = frameObject.score3 ;
-                    if(this._isDigit(this.lastScore2) || this.lastScore2 === "-"){
+                    if((this._isDigit(this.lastScore2) || this.lastScore2 === "-") || this.lastScore3 !== ""){
                         this.done = true ; 
                         this.totalScore = result.score ;
                         this.shadowRoot.querySelector('#frame_'+this.selectedFrame).selected = false ; 
                         this.dispatchEvent(new CustomEvent('rolls-computed', { bubbles: true, composed: true }));
+                        console.log('done');
                     }
                     else{
                         this.totalScore = "" ; 
@@ -137,10 +141,8 @@
                 Polymer.RenderStatus.afterNextRender(this, function() {
                     if(!this.done){
                         this.shadowRoot.querySelector('#frame_'+this.selectedFrame).selected = false ; 
-                        this.selectedFrame = Math.floor(frame) ;
-                        this.selectedFrame = Math.min(this.selectedFrame,9) ;
+                        this.selectedFrame = Math.min(Math.floor(frame),9) ;
                         this.shadowRoot.querySelector('#frame_'+this.selectedFrame).selected = true ; 
-                        this.dispatchEvent(new CustomEvent('rolls-computed', { bubbles: true, composed: true }));
                     }
                 });
                 return frameValues ;
