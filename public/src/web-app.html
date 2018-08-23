@@ -12,24 +12,17 @@
 <link rel="import" href='./icon-imports.html'>
 <link rel="import" href="./score-board.html">
 
-<imports>
+<imports>       
         <link rel="import" href="/bower_components/paper-icon-button/paper-icon-button.html">
-    <!-- <link rel="import" href="../bower_components/paper-spinner/paper-spinner-lite.html" async>
-    <link rel="import" href='../bower_components/polymer/polymer-element.html'>
-    <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
-    <link rel="import" href="../bower_components/app-route/app-location.html">
-    <link rel="import" href="../bower_components/app-route/app-route.html">
-    <link rel="import" href="../bower_components/app-route/app-route-converter.html">
-    <link rel="import" href="../bower_components/neon-animation/neon-animated-pages.html">
-    <link rel="import" href="../bower_components/neon-animation/neon-animation-runner-behavior.html">
-    <link rel="import" href="../bower_components/neon-animation/neon-animations.html">
-    <link rel="import" href="../bower_components/neon-animation/neon-shared-element-animatable-behavior.html">
-    <link rel="import" href="../bower_components/local-dom/local-dom.html">
+    <link rel="import" href='/bower_components/polymer/polymer-element.html'>
+    <link rel="import" href="/bower_components/paper-icon-button/paper-icon-button.html">
+    <link rel="import" href="/bower_components/neon-animation/neon-animated-pages.html">
+    <link rel="import" href="/bower_components/neon-animation/neon-animation-runner-behavior.html">
+    <link rel="import" href="/bower_components/neon-animation/neon-animations.html">
+    <link rel="import" href="/bower_components/neon-animation/neon-shared-element-animatable-behavior.html">
     <link rel="import" href='./icon-imports.html'>
-    <link rel="import" href="../bower_components/paper-toast/paper-toast.html">
-    <link rel="import" href="./ac-components/animation-behaviors/ripple-to.html">
-    <link rel="import" href="./ac-components/page-views/view-layout.html" >
-    <link rel="import" href="../bower_components/paper-button/paper-button.html"> -->
+    <link rel="import" href="/bower_components/paper-toast/paper-toast.html">
+    <link rel="import" href="/bower_components/paper-button/paper-button.html">
 </imports>
 
 <dom-module id="web-app">
@@ -46,10 +39,21 @@
                 opacity: 0.9; 
                 cursor: pointer ;
             }
+            paper-toast {
+                @apply --justify-text;
+                font-size: 20px;
+                margin-bottom: 5vh;
+                border-radius: 3px;
+                max-width: 65vw;
+            }
         </style>
+        <paper-toast id="toast"></paper-toast>
+        <paper-toast id="toastPersist" duration="0">
+            <paper-icon-button icon='close' on-click="_closeToastPersist"></paper-icon-button>
+        </paper-toast>
         <div wrapper>
             <score-board on-click='_selectScoreBoard' id='scoreboard_0' selected ='true'> </score-board>
-            <score-board on-click='_selectScoreBoard' id='scoreboard_1' > </score-board>
+            <!-- <score-board on-click='_selectScoreBoard' id='scoreboard_1' > </score-board> -->
         </div>
     </template>
     <script>
@@ -64,6 +68,21 @@
             }
             constructor() {
                 super();
+            }
+            async openToast (e) {
+                let toast = this.$.toast ; 
+                if(e.detail.persist) 
+                    toast = this.$.toastPersist  ;
+                if(toast.text === e.detail.msg && toast.opened)
+                    return ;
+
+                if(toast.opened)
+                    toast.close() ; 
+                toast.text = e.detail.msg;
+                toast.open();
+            }
+            _closeToastPersist() {
+                this.$.toastPersist.toggle() ;     
             }
             _selectScoreBoard(e) {
                 this.shadowRoot.querySelector('#'+e.currentTarget.id).selected = true ; 
@@ -85,6 +104,7 @@
             ready() {
                 super.ready();
                 this.addEventListener('rolls-computed', e => this._goToNextPlayer(e));
+                this.addEventListener('toast', e => this.openToast(e));
             }
         }
         customElements.define('web-app', WebApp);

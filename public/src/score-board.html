@@ -21,7 +21,7 @@
             </template>
             <last-frame id='frame_9' frame-number='9' score1='[[lastScore1]]' score2='[[lastScore2]]' score3='[[lastScore3]]' score-result='[[totalScore]]'>  </last-frame>
         </div>
-        <paper-input id='rollsInput' value='{{rolls}}'>  </paper-input>
+        <paper-input allowed-pattern="[0-9,Xx/-]+" id='rollsInput' value='{{rolls}}'>  </paper-input>
     </template>
     <script>
         class ScoreBoard extends Polymer.Element {
@@ -32,7 +32,8 @@
                 return {
                     rolls: {
                         type: String,
-                        value: ''
+                        value: '',
+                        observer:'_validateRolls'
                     },
                     frameValues: {
                         type: Array
@@ -48,6 +49,31 @@
             }
             constructor() {
                 super();
+            }
+            _test() {
+                if(this.selectedFrame<9){
+                    console.log(this.frameValues[this.selectedFrame].score1,this.frameValues[this.selectedFrame].score2,this.frameValues[this.selectedFrame].score3);
+                }
+                else{
+                    console.log(this.lastScore1,this.lastScore2,this.lastScore3);
+                }
+            }
+            _validateRolls(value) {
+                this.rolls = this.rolls.replace(/\s/g, "") ;
+                for(let i = 0 ; i < this.rolls.length ; i ++ ) {
+                    if(this.rolls[i] === '0')
+                        this.rolls = this.rolls.substr(0,i) + '-' + this.rolls.substr(i+1);
+                    else if(this.rolls[i] === 'x')
+                        this.rolls = this.rolls.substr(0,i) + 'X' + this.rolls.substr(i+1);
+                }
+                if(this.rolls.charAt(this.rolls.length-1)=== 'X') {
+                    this.rolls = this.rolls.substr(0,this.rolls.length-1) ;
+                    this.dispatchEvent(new CustomEvent('toast', {detail:{
+                        msg:'invalid input',
+                        persist:true
+                    }, bubbles: true, composed: true }));
+                }
+                return this.rolls ; 
             }
             _nextTurn() {
                 this.dispatchEvent(new CustomEvent('rolls-computed', { bubbles: true, composed: true }));
@@ -66,6 +92,10 @@
                 if (ch >= '0' && ch <= '9')
                     return true;
                 return false;
+            }
+            _setInputValue(e) {
+                console.log('mira',e.detail.value);
+                this.$.rollsInput.value = e.detail.value ; 
             }
             _computeFrameValues(rolls) {
                 // use backend
@@ -145,6 +175,7 @@
                         this.shadowRoot.querySelector('#frame_'+this.selectedFrame).selected = true ; 
                     }
                 });
+                this.frameValues = frameValues ;
                 return frameValues ;
             }
         }
