@@ -34,13 +34,6 @@
                 background-color: white ;
                 font-weight: 500 ;
             }
-            [score]:hover{
-                cursor: pointer ;
-            }
-            [score]:hover{
-                background-color: #308b8b ;
-                opacity: 0.3 ;
-            }
             .selected{
                 background-color: #308b8b ;
                 opacity: 0.4; 
@@ -126,19 +119,16 @@
                         this.shadowRoot.querySelector('[score2Holder]').classList.remove('selected') ; 
                         this.shadowRoot.querySelector('[score3Holder]').classList.remove('selected') ; 
                         this.shadowRoot.querySelector('[score1Holder]').classList.add('selected') ;
-                        console.log('en 1 ');
                     }
                     else if(this.score2 === ""){
                         this.shadowRoot.querySelector('[score1Holder]').classList.remove('selected') ; 
                         this.shadowRoot.querySelector('[score3Holder]').classList.remove('selected') ; 
                         this.shadowRoot.querySelector('[score2Holder]').classList.add('selected') ;
-                        console.log('en 2');
                     }
                     else if(this.score3 === ""){
                         this.shadowRoot.querySelector('[score1Holder]').classList.remove('selected') ; 
                         this.shadowRoot.querySelector('[score2Holder]').classList.remove('selected') ; 
                         this.shadowRoot.querySelector('[score3Holder]').classList.add('selected') ;
-                        console.log('en 2');
                     }
                 }
                 else{

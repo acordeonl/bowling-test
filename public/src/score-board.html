@@ -94,8 +94,20 @@
                     this.lastScore1 = frameObject.score1  ;
                     this.lastScore2 = frameObject.score2 ;
                     this.lastScore3 = frameObject.score3 ;
+                    if(this._isDigit(this.lastScore2) || this.lastScore3 !== ""){
+                        this.done = true ; 
+                        this.totalScore = result.score ;
+                        console.log(this.selectedFrame);
+                        this.shadowRoot.querySelector('#frame_'+this.selectedFrame).selected = false ; 
+                    }
+                    else{
+                        this.totalScore = "" ; 
+                        this.done = false ; 
+                    }
                 }
                 else if (frame < 9){
+                    this.done = false ; 
+                    this.totalScore = "" ; 
                     this.lastScore1 = "" ;
                     this.lastScore2 = "" ;
                     this.lastScore3 = "" ;
@@ -110,13 +122,13 @@
                     }
                 }
                 Polymer.RenderStatus.afterNextRender(this, function() {
-                    this.shadowRoot.querySelector('#frame_'+this.selectedFrame).selected = false ; 
-                    this.selectedFrame = Math.floor(frame) ;
-                    this.selectedFrame = Math.min(this.selectedFrame,9) ;
-                    console.log(this.selectedFrame);
-                    this.shadowRoot.querySelector('#frame_'+this.selectedFrame).selected = true ; 
+                    if(!this.done){
+                        this.shadowRoot.querySelector('#frame_'+this.selectedFrame).selected = false ; 
+                        this.selectedFrame = Math.floor(frame) ;
+                        this.selectedFrame = Math.min(this.selectedFrame,9) ;
+                        this.shadowRoot.querySelector('#frame_'+this.selectedFrame).selected = true ; 
+                    }
                 });
-                this.totalScore = result.score ;
                 return frameValues ;
             }
         }
